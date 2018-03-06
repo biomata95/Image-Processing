@@ -55,7 +55,7 @@ def histograma(imagem,lista):
 	axes[0,1].axis('off')
 	axes[0,1].set_title('Escala')
 	axcolor = 'lightgoldenrodyellow'
-	escala = plt.axes([0.23, 0.67, 0.13, 0.21], facecolor=axcolor)
+	escala = plt.axes([0.23, 0.67, 0.13, 0.21])
 	radio = RadioButtons(escala, ('Correlacao','QuiQuadrado','Intersecao','BHATTACHARYYA'))
 	k=0
 	contL=0
@@ -71,20 +71,21 @@ def histograma(imagem,lista):
 				coluna=matrizValores[k]			
 				
 				if(i==1):
-					rax = plt.axes([0.085+cont, 0.4, 0.05, 0.21], facecolor=axcolor)
+					rax = plt.axes([0.085+cont, 0.4, 0.05, 0.21])
 					radio = RadioButtons(rax, (coluna[0],coluna[1],coluna[2],coluna[3]))
 					cont=cont+0.14
 				if(i==2):	
-					rax2 = plt.axes([0.085+cont, 0.004+contL, 0.05, 0.21], facecolor=axcolor)
+					rax2 = plt.axes([0.085+cont, 0.004+contL, 0.05, 0.21])
 					radio = RadioButtons(rax2, (coluna[0],coluna[1],coluna[2],coluna[3]))
 					cont=cont+0.14
 				axes[i,j].imshow(imag)
 				k=k+1
 		contL=contL+0.07
-
+	
 	fig.show()
-	cv2.waitKey(0)
-	cv2.destroyAllWindows()
+	plt.pause(100000000)
+	
+
 
 
 def main():
