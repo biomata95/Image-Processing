@@ -1,5 +1,6 @@
 import sys
 import os
+from math import sqrt
 import numpy as np
 import numpy.random as rnd
 import glob
@@ -7,117 +8,48 @@ import cv2
 import math
 import colorsys
 import matplotlib.pyplot as plt
-from matplotlib.widgets import RadioButtons
+from matplotlib import style
+from collections import Counter
+import warnings
+import random
+style.use('fivethirtyeight')
 
+def leitura(arquivo): # leitura do arquivo de imagem
+	img = cv2.imread(arquivo) 
+	return img
 
-#Classificacao com Histogramas Exercicio 2
-
-
-# FONTE da classificacao: https://mpatacchiola.github.io/blog/2016/11/12/the-simplest-classifier-histogram-intersection.html
-
-
-#hist= cv2.calcHist([imagem],[0],None,[256],[0,256])
-#correlation = cv2.compareHist(histTeste,histComparativa,cv2.cv.CV_COMP_CORREL)
-#quiQuadrado = cv2.compareHist(histTeste,histComparativa,cv2.cv.CV_COMP_CHISQR)
-#interse = cv2.compareHist(histTeste,histComparativa,cv2.cv.CV_COMP_INTERSECT)
-#battha = cv2.compareHist(histTeste,histComparativa,cv2.cv.CV_COMP_BHATTACHARYYA)
-
-def leituraArquivo(arqImagem):
-	imagem = cv2.imread(arqImagem) 
-	return imagem
-
-def visualizarImagem(img):
+def visualizarImagem(img): # visualiza imagem
 	cv2.imshow('image',img)
 	cv2.waitKey(0)
 	cv2.destroyAllWindows()
 
 
-def histograma(imagemTeste,listaFiguras):
-	histTeste = cv2.calcHist([imagemTeste],[0],None,[256],[0,256])
-	matrizValores = [[0.0 for i in range(0,4)]for j in range(0,len(listaFiguras))]
-	correlation=0
-	quiQuadrado=0
-	interse=0
-	battha=0
-	for i in range(0,len(listaFiguras)):
-		comparativa=cv2.imread(listaFiguras[i])
-		histComparativa = cv2.calcHist([comparativa],[0],None,[256],[0,256])
-		correlation = cv2.compareHist(histTeste,histComparativa,cv2.cv.CV_COMP_CORREL)
-		quiQuadrado = cv2.compareHist(histTeste,histComparativa,cv2.cv.CV_COMP_CHISQR)
-
-		interse = cv2.compareHist(histTeste,histComparativa,cv2.cv.CV_COMP_INTERSECT)
-
-		battha = cv2.compareHist(histTeste,histComparativa,cv2.cv.CV_COMP_BHATTACHARYYA)
-
-		matrizValores[i][0]=correlation
-		matrizValores[i][1]=quiQuadrado
-		matrizValores[i][2]=interse
-		matrizValores[i][3]=battha
-
-
-	fig = plt.figure("Histograma Comparacoes")
-
-	fig.suptitle("Histograma Comparacoes", fontsize = 20)
-	plt.rcParams["figure.figsize"] = [15,7]
-	fig, axes = plt.subplots(nrows=3,ncols=7)
-
-	axes[0,0].imshow(imagemTeste)
-	axes[0,0].axis('off')
-	axes[0,0].set_title('Figura Teste')
-	axes[0,1].axis('off')
-	axes[0,1].set_title('Escala')
-	axcolor = 'lightgoldenrodyellow'
-	escala = plt.axes([0.23, 0.67, 0.13, 0.21])
-	radio = RadioButtons(escala, ('Correlacao','QuiQuadrado','Intersecao','BHATTACHARYYA'))
-	k=0
-	contL=0
-	for i in range(0,3):
-		cont=0
-		for j in range(0,math.trunc(len(listaFiguras)/2)):
-			if(i==0):
-				axes[i,j].axis('off')
-			else:
-				imag=cv2.imread(listaFiguras[k])
-				axes[i,j].axis('off')
-
-				coluna=matrizValores[k]			
-				
-				resultado=' '
-				if(i==1):
-					if(coluna[0]==1):
-						resultado='parecido'
-					if(coluna[0]<1 and coluna[0]>=0.7):
-						resultado='meio-parecido'
-					if(coluna[0]<0.7 and coluna[0]>=-1):
-						resultado='diferente'
-					axes[i,j].set_title(resultado)
-				if(i==2):		
-					if(coluna[0]==1):
-						resultado='parecido'
-					if(coluna[0]<1 and coluna[0]>=0.7):
-						resultado='meio-parecido'
-					if(coluna[0]<0.7 and coluna[0]>=-1):
-						resultado='diferente'
-					axes[i,j].set_title(resultado)
-					cont=cont+0.14
-				axes[i,j].imshow(imag)
-				k=k+1
-		contL=contL+0.07
+def KNN(data,predict,k):	
+	if len(data) >= k:
+		print('k eh menor do que o total de grupos')
+	distances=[]
+	for group in data:
+		for features in data[group]:
+			distancia_euclidiana=np.linalg.norm(np.array(features)-np.array(predict))
+			distances.append([distancia_euclidiana,group])
+	votos=[i[1] for i in sorted(distances)[:k]]
+	print(Counter(votos).most_common(1))
+	resultado_votos=Counter(votos).most_common(1)[0][0]
+	return resultado_votos
 	
-	fig.show()
-	plt.pause(100000000)
-	
-	
-
-
-
 def main():
 
 	arquivo=sys.argv[1]; # nome do arquivo -> imagem
-	lista=glob.glob("Archive/*.png") # Varreduras dos arquivos .png do diretorio Archive/
-	img=leituraArquivo(arquivo)
-	histograma(img,lista)
-
+ 	img=leitura(arquivo) #leitura do arquivo	
+	dataset={'k':[[1,2],[2,3],[3,1]],'r':[[6,5],[7,7],[8,6]],'s':[[11,5],[12,3],[10,1]]}
+	new_features=[3,2]
+	resultado=KNN(dataset,new_features,4)
+	[[plt.scatter(ii[0],ii[1],s=200, color=i) for ii in dataset[i]] for i in dataset]
+	plt.scatter(new_features[0],new_features[1],color=resultado)
+	plt.show()
+	print(resultado)
+	#visualizarImagem(img) # visualiza a Imagem resultante
+	
 
 if __name__ == "__main__":
 	main()
