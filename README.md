@@ -1,2 +1,2 @@
-# Processamento-de-Imagens-CI394
+# Image-Processing
 
